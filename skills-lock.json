@@ -1,0 +1,29 @@
+{
+  "version": 1,
+  "skills": {
+    "apple-ui-designer": {
+      "source": "heyman333/atelier-ui",
+      "sourceType": "github",
+      "skillPath": "skills/apple-ui-designer/SKILL.md",
+      "computedHash": "26d43c0a38e7a0ad8cf2cd5418d48ca7525873cc60f203ac67fcf024ce577eb3"
+    },
+    "flutter-expert": {
+      "source": "jeffallan/claude-skills",
+      "sourceType": "github",
+      "skillPath": "skills/flutter-expert/SKILL.md",
+      "computedHash": "c7849f39cf34d91999f573b8ad39315dd68c7717bcd38c42b5e49cd83785d9c1"
+    },
+    "flutter-ui-ux": {
+      "source": "ajianaz/skills-collection",
+      "sourceType": "github",
+      "skillPath": "skills/flutter-ui-ux/SKILL.md",
+      "computedHash": "a0fc21d9328f80ab16c3e3463a12f4fd86462bc6370fe0ea016dc06ae1616654"
+    },
+    "frontend-design": {
+      "source": "anthropics/skills",
+      "sourceType": "github",
+      "skillPath": "skills/frontend-design/SKILL.md",
+      "computedHash": "063a0e6448123cd359ad0044cc46b0e490cc7964d45ef4bb9fd842bd2ffbca67"
+    }
+  }
+}
