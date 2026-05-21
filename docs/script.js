@@ -7,13 +7,13 @@ document.addEventListener('DOMContentLoaded', function() {
   var ua = navigator.userAgent.toLowerCase();
 
   if (ua.indexOf('win') !== -1) {
-    btn.href = 'https://github.com/eleodevv/GhostB/releases/latest/download/GhostB-1.0.0-windows.zip';
+    btn.href = 'https://github.com/eleodevv/GhostB/releases/latest/download/GhostB-1.0.2-windows.zip';
     label.textContent = 'Descargar para Windows';
   } else if (ua.indexOf('mac') !== -1) {
-    btn.href = 'https://github.com/eleodevv/GhostB/releases/latest/download/GhostB-1.0.0.dmg';
+    btn.href = 'https://github.com/eleodevv/GhostB/releases/latest/download/GhostB-1.0.2.dmg';
     label.textContent = 'Descargar para macOS';
   } else if (ua.indexOf('linux') !== -1) {
-    btn.href = 'https://github.com/eleodevv/GhostB/releases/latest/download/ghostb_1.0.0_amd64.deb';
+    btn.href = 'https://github.com/eleodevv/GhostB/releases/latest/download/ghostb_1.0.2_amd64.deb';
     label.textContent = 'Descargar para Linux';
   } else {
     btn.href = 'https://github.com/eleodevv/GhostB/releases';
