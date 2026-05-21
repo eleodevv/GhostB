@@ -4,131 +4,173 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>GhostB — Eliminador Universal de Apps</title>
-  <meta name="description" content="Elimina aplicaciones por completo. Cachés, configs, residuales. Linux, Windows, macOS.">
-  <link rel="icon" href="ghostb.png">
-  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Sora:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
-  <script src="https://code.iconify.design/iconify-icon/2.1.0/iconify-icon.min.js"></script>
+  <meta name="description" content="GhostB elimina aplicaciones por completo. Cachés, configs, residuales. Linux, Windows, macOS.">
+  <link rel="icon" href="ghostb.png" type="image/png">
+  <link href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500;600;700&family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@iconify/css@1/iconify.min.css">
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@iconify-icons/uil/linux.js">
+  <script src="https://code.iconify.design/3/3.1.0/iconify.min.js"></script>
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
+  <div class="noise"></div>
+  <div class="scanline"></div>
 
-  <!-- ════ NAV ════ -->
-  <header>
-    <nav>
-      <div class="brand">
-        <img src="ghostb.png" alt="GhostB" width="24" height="24">
-        <span>GhostB</span>
+  <!-- Nav -->
+  <nav class="reveal">
+    <a href="#" class="nav-brand">
+      <img src="ghostb.png" alt="GhostB" class="nav-logo">
+      <span>ghost<strong>B</strong></span>
+    </a>
+    <div class="nav-right">
+      <a href="#features">funciones</a>
+      <a href="#platforms">plataformas</a>
+      <a href="https://github.com/eleodevv/GhostB" target="_blank" class="nav-btn">
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C5.37 0 0 5.37 0 12c0 5.31 3.435 9.795 8.205 11.385.6.105.825-.255.825-.57 0-.285-.015-1.23-.015-2.235-3.015.555-3.795-.735-4.035-1.41-.135-.345-.72-1.41-1.23-1.695-.42-.225-1.02-.78-.015-.795.945-.015 1.62.87 1.845 1.23 1.08 1.815 2.805 1.305 3.495.99.105-.78.42-1.305.765-1.605-2.67-.3-5.46-1.335-5.46-5.925 0-1.305.465-2.385 1.23-3.225-.12-.3-.54-1.53.12-3.18 0 0 1.005-.315 3.3 1.23.96-.27 1.98-.405 3-.405s2.04.135 3 .405c2.295-1.56 3.3-1.23 3.3-1.23.66 1.65.24 2.88.12 3.18.765.84 1.23 1.905 1.23 3.225 0 4.605-2.805 5.625-5.475 5.925.435.375.81 1.095.81 2.22 0 1.605-.015 2.895-.015 3.3 0 .315.225.69.825.57A12.02 12.02 0 0024 12c0-6.63-5.37-12-12-12z"/></svg>
+        GitHub
+      </a>
+    </div>
+  </nav>
+
+  <!-- Hero -->
+  <section class="hero">
+    <div class="hero-badge reveal" style="--delay: 0.1s">
+      <span class="pulse"></span>
+      open source · multiplataforma
+    </div>
+
+    <div class="hero-ghost reveal" style="--delay: 0.2s">
+      <img src="ghostb.png" alt="GhostB pixel ghost mascot">
+      <div class="ghost-shadow"></div>
+    </div>
+
+    <h1 class="reveal" style="--delay: 0.3s">
+      Elimina apps.<br>
+      <span class="glitch" data-text="Sin rastro.">Sin rastro.</span>
+    </h1>
+
+    <p class="hero-desc reveal" style="--delay: 0.4s">
+      GhostB destruye aplicaciones por completo — paquetes, cachés,<br>
+      configs ocultas, logs, temporales. <em>Todo desaparece.</em>
+    </p>
+
+    <div class="hero-cta reveal" style="--delay: 0.5s">
+      <a id="auto-download" href="https://github.com/eleodevv/GhostB/releases" class="btn-main">
+        <span class="btn-icon">↓</span>
+        <span id="download-label">Descargar</span>
+      </a>
+      <a href="https://github.com/eleodevv/GhostB" class="btn-ghost">
+        Ver código →
+      </a>
+    </div>
+
+    <div class="hero-tags reveal" style="--delay: 0.6s">
+      <a href="https://github.com/eleodevv/GhostB/releases/latest/download/ghostb_1.0.0_amd64.deb" class="download-tag">
+        <span class="iconify" data-icon="uil:linux"></span> Linux .deb
+      </a>
+      <a href="https://github.com/eleodevv/GhostB/releases/latest/download/GhostB-1.0.0.dmg" class="download-tag">
+        <span class="iconify" data-icon="qlementine-icons:mac-24"></span> macOS .dmg
+      </a>
+      <a href="https://github.com/eleodevv/GhostB/releases/latest/download/GhostB-1.0.0-windows.zip" class="download-tag">
+        <span class="iconify" data-icon="uil:windows"></span> Windows .zip
+      </a>
+    </div>
+  </section>
+
+  <!-- Features -->
+  <section id="features" class="features">
+    <div class="section-label reveal">// funciones</div>
+    <h2 class="reveal">¿Qué hace el fantasma?</h2>
+
+    <div class="features-grid">
+      <article class="feat reveal" style="--delay: 0.1s">
+        <div class="feat-num">01</div>
+        <h3>Búsqueda lazy</h3>
+        <p>No carga miles de paquetes. Solo busca cuando escribes. Resultados en milisegundos.</p>
+      </article>
+      <article class="feat reveal" style="--delay: 0.15s">
+        <div class="feat-num">02</div>
+        <h3>Eliminación total</h3>
+        <p>Desinstala + borra ~/.config, ~/.cache, ~/.local/share, /tmp, logs, datos ocultos.</p>
+      </article>
+      <article class="feat reveal" style="--delay: 0.2s">
+        <div class="feat-num">03</div>
+        <h3>Protección</h3>
+        <p>Bloquea apps críticas. Persiste entre sesiones. Imposible borrar por accidente.</p>
+      </article>
+      <article class="feat reveal" style="--delay: 0.25s">
+        <div class="feat-num">04</div>
+        <h3>Multiplataforma</h3>
+        <p>Linux, Windows, macOS. Detecta APT, Snap, Flatpak, Winget, Homebrew y más.</p>
+      </article>
+      <article class="feat reveal" style="--delay: 0.3s">
+        <div class="feat-num">05</div>
+        <h3>Pixel UI</h3>
+        <p>Interfaz retro-minimalista. Monospace. Dark mode. Inspirada en la mascota fantasma.</p>
+      </article>
+      <article class="feat reveal" style="--delay: 0.35s">
+        <div class="feat-num">06</div>
+        <h3>Ultra ligero</h3>
+        <p>Flutter nativo compilado. Sin runtime. Sin Electron. Arranca en menos de 1 segundo.</p>
+      </article>
+    </div>
+  </section>
+
+  <!-- Platforms -->
+  <section id="platforms" class="platforms">
+    <div class="section-label reveal">// plataformas</div>
+    <h2 class="reveal">Soporte nativo</h2>
+
+    <div class="plat-grid">
+      <div class="plat-card reveal" style="--delay: 0.1s">
+        <div class="plat-emoji"><span class="iconify" data-icon="uil:linux" style="font-size:28px"></span></div>
+        <h3>Linux</h3>
+        <div class="plat-list">
+          <span>APT/DPKG</span><span>Snap</span><span>Flatpak</span>
+          <span>AppImage</span><span>Pacman</span><span>RPM/DNF</span>
+        </div>
       </div>
-      <div class="nav-links">
-        <a href="#features">Funciones</a>
-        <a href="#download">Descargar</a>
-        <a href="https://github.com/eleodevv/GhostB" target="_blank" class="gh-btn">
-          <iconify-icon icon="mdi:github" width="16"></iconify-icon>
-          GitHub
-        </a>
-      </div>
-    </nav>
-  </header>
-
-  <!-- ════ HERO ════ -->
-  <main>
-    <section class="hero">
-      <div class="hero-content">
-        <div class="mascot">
-          <img src="ghostb.png" alt="GhostB mascot" width="120" height="120">
-        </div>
-        <h1>Elimina apps.<br><span>Sin rastro.</span></h1>
-        <p>Desinstala aplicaciones por completo — paquetes, cachés, configs ocultas, logs y temporales. Todo desaparece.</p>
-        <div class="hero-btns">
-          <a href="#download" class="btn primary">↓ Descargar</a>
-          <a href="https://github.com/eleodevv/GhostB" class="btn secondary">Ver código →</a>
-        </div>
-        <div class="platforms-mini">
-          <span><iconify-icon icon="uil:linux"></iconify-icon> Linux</span>
-          <span><iconify-icon icon="uil:windows"></iconify-icon> Windows</span>
-          <span><iconify-icon icon="qlementine-icons:mac-24"></iconify-icon> macOS</span>
+      <div class="plat-card reveal" style="--delay: 0.2s">
+        <div class="plat-emoji"><span class="iconify" data-icon="uil:windows" style="font-size:28px"></span></div>
+        <h3>Windows</h3>
+        <div class="plat-list">
+          <span>Registro</span><span>Winget</span><span>Chocolatey</span>
+          <span>Scoop</span><span>MSI</span><span>Portable</span>
         </div>
       </div>
-    </section>
-
-    <!-- ════ FEATURES ════ -->
-    <section id="features" class="features">
-      <h2>Funciones</h2>
-      <div class="grid-3">
-        <div class="card">
-          <div class="card-icon">⚡</div>
-          <h3>Búsqueda instantánea</h3>
-          <p>No carga todo al inicio. Busca bajo demanda en milisegundos.</p>
-        </div>
-        <div class="card">
-          <div class="card-icon">🗑️</div>
-          <h3>Eliminación total</h3>
-          <p>Borra paquete + ~/.config + ~/.cache + ~/.local + /tmp + logs.</p>
-        </div>
-        <div class="card">
-          <div class="card-icon">🔒</div>
-          <h3>Protección</h3>
-          <p>Bloquea apps para que no se eliminen por accidente. Persiste entre sesiones.</p>
-        </div>
-        <div class="card">
-          <div class="card-icon">🐧</div>
-          <h3>Multi package manager</h3>
-          <p>APT, Snap, Flatpak, Winget, Chocolatey, Scoop, Homebrew, MacPorts.</p>
-        </div>
-        <div class="card">
-          <div class="card-icon">🌙</div>
-          <h3>Dark mode</h3>
-          <p>Interfaz oscura por defecto. Tipografía monospace. Estilo pixel-ghost.</p>
-        </div>
-        <div class="card">
-          <div class="card-icon">🚀</div>
-          <h3>Nativo y ligero</h3>
-          <p>Flutter compilado. Sin Electron. Sin runtime. Arranca en menos de 1s.</p>
+      <div class="plat-card reveal" style="--delay: 0.3s">
+        <div class="plat-emoji"><span class="iconify" data-icon="qlementine-icons:mac-24" style="font-size:28px"></span></div>
+        <h3>macOS</h3>
+        <div class="plat-list">
+          <span>.app</span><span>Homebrew</span><span>MacPorts</span>
+          <span>Library</span><span>LaunchAgents</span><span>Caches</span>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <!-- ════ DOWNLOAD ════ -->
-    <section id="download" class="download">
-      <h2>Descargar</h2>
-      <p class="download-sub">Elige tu plataforma. Open source, gratis.</p>
+  <!-- CTA -->
+  <section class="cta">
+    <div class="cta-inner reveal">
+      <img src="ghostb.png" alt="" class="cta-ghost">
+      <h2>Tu sistema. Limpio.</h2>
+      <p>Open source. Gratis. Para siempre.</p>
+      <a href="https://github.com/eleodevv/GhostB/releases" class="btn-main btn-lg">
+        <span class="btn-icon">↓</span>
+        Descargar GhostB
+      </a>
+    </div>
+  </section>
 
-      <div class="grid-3">
-        <a href="https://github.com/eleodevv/GhostB/releases/latest/download/ghostb_1.0.0_amd64.deb" class="dl-card">
-          <iconify-icon icon="uil:linux" width="40"></iconify-icon>
-          <h3>Linux</h3>
-          <span class="dl-file">.deb (Debian/Ubuntu)</span>
-          <div class="dl-btn">Descargar</div>
-        </a>
-        <a href="https://github.com/eleodevv/GhostB/releases/latest/download/GhostB-1.0.0.dmg" class="dl-card">
-          <iconify-icon icon="qlementine-icons:mac-24" width="40"></iconify-icon>
-          <h3>macOS</h3>
-          <span class="dl-file">.dmg nativo</span>
-          <div class="dl-btn">Descargar</div>
-        </a>
-        <a href="https://github.com/eleodevv/GhostB/releases/latest/download/GhostB-1.0.0-windows.zip" class="dl-card">
-          <iconify-icon icon="uil:windows" width="40"></iconify-icon>
-          <h3>Windows</h3>
-          <span class="dl-file">.exe portable</span>
-          <div class="dl-btn">Descargar</div>
-        </a>
-      </div>
-
-      <p class="dl-all">
-        <a href="https://github.com/eleodevv/GhostB/releases">Ver todas las versiones en GitHub →</a>
-      </p>
-    </section>
-  </main>
-
-  <!-- ════ FOOTER ════ -->
-  <footer>
-    <div class="brand">
-      <img src="ghostb.png" alt="" width="18" height="18">
+  <!-- Footer -->
+  <footer class="reveal">
+    <div class="footer-brand">
+      <img src="ghostb.png" alt="" width="20" height="20">
       <span>GhostB</span>
     </div>
-    <span>por <a href="https://github.com/eleodevv">@eleodevv</a></span>
+    <p>hecho por <a href="https://github.com/eleodevv">@eleodevv</a></p>
   </footer>
 
-  <script src="app.js"></script>
+  <script src="script.js"></script>
 </body>
 </html>

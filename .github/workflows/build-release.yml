@@ -68,35 +68,35 @@ jobs:
 
           # Wrapper ejecutable
           cat > deb/usr/local/bin/ghostb << 'EOF'
-          #!/bin/bash
-          cd /opt/ghostb
-          exec ./ghostb "$@"
-          EOF
+#!/bin/bash
+cd /opt/ghostb
+exec ./ghostb "$@"
+EOF
           chmod +x deb/usr/local/bin/ghostb
 
           # Desktop entry
-          cat > deb/usr/share/applications/ghostb.desktop << EOF
-          [Desktop Entry]
-          Name=GhostB
-          Comment=Eliminador universal de aplicaciones
-          Exec=/usr/local/bin/ghostb
-          Icon=ghostb
-          Terminal=false
-          Type=Application
-          Categories=Utility;System;
-          EOF
+          cat > deb/usr/share/applications/ghostb.desktop << 'EOF'
+[Desktop Entry]
+Name=GhostB
+Comment=Eliminador universal de aplicaciones
+Exec=/usr/local/bin/ghostb
+Icon=ghostb
+Terminal=false
+Type=Application
+Categories=Utility;System;
+EOF
 
           # Control
           cat > deb/DEBIAN/control << EOF
-          Package: ghostb
-          Version: ${VERSION}
-          Architecture: amd64
-          Maintainer: eleodevv <contact@ghostb.dev>
-          Description: GhostB - Universal Smart App Remover
-           Elimina aplicaciones por completo incluyendo caches,
-           configuraciones y archivos residuales.
-          Depends: libgtk-3-0
-          EOF
+Package: ghostb
+Version: ${VERSION}
+Architecture: amd64
+Maintainer: eleodevv <contact@ghostb.dev>
+Description: GhostB - Universal Smart App Remover
+ Elimina aplicaciones por completo incluyendo caches,
+ configuraciones y archivos residuales.
+Depends: libgtk-3-0
+EOF
 
           dpkg-deb --build deb "ghostb_${VERSION}_amd64.deb"
           echo "✅ .deb creado: ghostb_${VERSION}_amd64.deb"
