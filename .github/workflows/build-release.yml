@@ -9,263 +9,115 @@ on:
       version:
         description: 'Version (e.g. v1.0.0)'
         required: true
-        default: 'v1.0.0'
+        default: 'v1.0.1'
 
 permissions:
   contents: write
 
 jobs:
-  # ── Linux: .deb ─────────────────────────────────────────
   build-linux:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.27.4'
           channel: 'stable'
           cache: true
-
-      - name: Disable Flutter analytics
+      - name: Disable analytics
         continue-on-error: true
         run: flutter config --no-analytics
-
-      - name: Install Linux dependencies
+      - name: Install deps
         run: |
           sudo apt-get update
           sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev dpkg-dev
-
-      - name: Get dependencies
-        run: flutter pub get
-
-      - name: Build Linux
-        run: flutter build linux --release
-
-      - name: Package .deb
+      - run: flutter pub get
+      - run: flutter build linux --release
+      - name: Package deb
         run: |
           VERSION="${{ github.ref_name || github.event.inputs.version }}"
           VERSION="${VERSION#v}"
-
-          BUNDLE_DIR="build/linux/x64/release/bundle"
-
-          echo "📂 Bundle contents:"
-          ls -lah "$BUNDLE_DIR/"
-
-          # Estructura .deb
-          mkdir -p deb/DEBIAN
-          mkdir -p deb/opt/ghostb
-          mkdir -p deb/usr/local/bin
-          mkdir -p deb/usr/share/applications
-          mkdir -p deb/usr/share/icons/hicolor/256x256/apps
-
-          # Copiar bundle completo
-          cp -r "$BUNDLE_DIR/"* deb/opt/ghostb/
-
-          # Icono
+          BUNDLE="build/linux/x64/release/bundle"
+          mkdir -p deb/DEBIAN deb/opt/ghostb deb/usr/local/bin deb/usr/share/applications deb/usr/share/icons/hicolor/256x256/apps
+          cp -r "$BUNDLE/"* deb/opt/ghostb/
           cp assets/images/ghostb.png deb/usr/share/icons/hicolor/256x256/apps/ghostb.png
-
-          # Wrapper ejecutable
-          cat > deb/usr/local/bin/ghostb << 'EOF'
-#!/bin/bash
-cd /opt/ghostb
-exec ./ghostb "$@"
-EOF
+          printf '#!/bin/bash\ncd /opt/ghostb\nexec ./ghostb "$@"\n' > deb/usr/local/bin/ghostb
           chmod +x deb/usr/local/bin/ghostb
-
-          # Desktop entry
-          cat > deb/usr/share/applications/ghostb.desktop << 'EOF'
-[Desktop Entry]
-Name=GhostB
-Comment=Eliminador universal de aplicaciones
-Exec=/usr/local/bin/ghostb
-Icon=ghostb
-Terminal=false
-Type=Application
-Categories=Utility;System;
-EOF
-
-          # Control
-          cat > deb/DEBIAN/control << EOF
-Package: ghostb
-Version: ${VERSION}
-Architecture: amd64
-Maintainer: eleodevv <contact@ghostb.dev>
-Description: GhostB - Universal Smart App Remover
- Elimina aplicaciones por completo incluyendo caches,
- configuraciones y archivos residuales.
-Depends: libgtk-3-0
-EOF
-
+          printf '[Desktop Entry]\nName=GhostB\nComment=Eliminador universal de apps\nExec=/usr/local/bin/ghostb\nIcon=ghostb\nTerminal=false\nType=Application\nCategories=Utility;System;\n' > deb/usr/share/applications/ghostb.desktop
+          printf "Package: ghostb\nVersion: ${VERSION}\nArchitecture: amd64\nMaintainer: eleodevv\nDescription: GhostB - Universal Smart App Remover\nDepends: libgtk-3-0\n" > deb/DEBIAN/control
           dpkg-deb --build deb "ghostb_${VERSION}_amd64.deb"
-          echo "✅ .deb creado: ghostb_${VERSION}_amd64.deb"
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v4
         with:
           name: linux-packages
           path: "*.deb"
 
-  # ── macOS: .dmg ─────────────────────────────────────────
   build-macos:
     runs-on: macos-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.27.4'
           channel: 'stable'
           cache: true
-
-      - name: Disable Flutter analytics
+      - name: Disable analytics
         continue-on-error: true
         run: flutter config --no-analytics
-
-      - name: Get dependencies
-        run: flutter pub get
-
-      - name: Build macOS
-        run: flutter build macos --release
-
-      - name: Find app and set icon
-        run: |
-          APP_PATH=$(find build/macos/Build/Products/Release -name "*.app" -type d | head -1)
-          if [ -z "$APP_PATH" ]; then
-            echo "❌ App not found"
-            exit 1
-          fi
-          echo "✅ App found: $APP_PATH"
-          echo "APP_PATH=$APP_PATH" >> $GITHUB_ENV
-
-          # Generar icns desde ghostb.png
-          mkdir -p icon.iconset
-          sips -z 16 16 assets/images/ghostb.png --out icon.iconset/icon_16x16.png
-          sips -z 32 32 assets/images/ghostb.png --out icon.iconset/icon_16x16@2x.png
-          sips -z 32 32 assets/images/ghostb.png --out icon.iconset/icon_32x32.png
-          sips -z 64 64 assets/images/ghostb.png --out icon.iconset/icon_32x32@2x.png
-          sips -z 128 128 assets/images/ghostb.png --out icon.iconset/icon_128x128.png
-          sips -z 256 256 assets/images/ghostb.png --out icon.iconset/icon_128x128@2x.png
-          sips -z 256 256 assets/images/ghostb.png --out icon.iconset/icon_256x256.png
-          sips -z 512 512 assets/images/ghostb.png --out icon.iconset/icon_256x256@2x.png
-          sips -z 512 512 assets/images/ghostb.png --out icon.iconset/icon_512x512.png
-          sips -z 1024 1024 assets/images/ghostb.png --out icon.iconset/icon_512x512@2x.png
-          iconutil -c icns icon.iconset -o AppIcon.icns
-          cp AppIcon.icns "$APP_PATH/Contents/Resources/AppIcon.icns"
-          echo "✅ Icono aplicado"
-
-          # Ad-hoc sign
-          codesign --force --deep --sign - "$APP_PATH"
-
-      - name: Create .dmg
+      - run: flutter pub get
+      - run: flutter build macos --release
+      - name: Create DMG
         run: |
           VERSION="${{ github.ref_name || github.event.inputs.version }}"
           VERSION="${VERSION#v}"
-
-          DMG_DIR="dmg_staging"
-          mkdir -p "$DMG_DIR"
-          cp -R "$APP_PATH" "$DMG_DIR/"
-          ln -s /Applications "$DMG_DIR/Applications"
-
-          hdiutil create \
-            -volname "GhostB" \
-            -srcfolder "$DMG_DIR" \
-            -ov -format UDZO \
-            -imagekey zlib-level=9 \
-            "GhostB-${VERSION}.dmg"
-
-          echo "✅ DMG creado: GhostB-${VERSION}.dmg"
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+          APP_PATH=$(find build/macos/Build/Products/Release -name "*.app" -type d | head -1)
+          if [ -z "$APP_PATH" ]; then echo "No .app found"; exit 1; fi
+          codesign --force --deep --sign - "$APP_PATH"
+          mkdir -p dmg_staging
+          cp -R "$APP_PATH" dmg_staging/
+          ln -s /Applications dmg_staging/Applications
+          hdiutil create -volname "GhostB" -srcfolder dmg_staging -ov -format UDZO "GhostB-${VERSION}.dmg"
+      - uses: actions/upload-artifact@v4
         with:
           name: macos-packages
           path: "*.dmg"
 
-  # ── Windows: .exe completo ──────────────────────────────
   build-windows:
     runs-on: windows-latest
     steps:
       - uses: actions/checkout@v4
-
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.27.4'
           channel: 'stable'
           cache: true
-
-      - name: Disable Flutter analytics
+      - name: Disable analytics
         continue-on-error: true
         run: flutter config --no-analytics
-
-      - name: Get dependencies
-        run: flutter pub get
-
-      - name: Build Windows
-        run: flutter build windows --release
-
-      - name: Package Windows
+      - run: flutter pub get
+      - run: flutter build windows --release
+      - name: Package
         shell: pwsh
         run: |
-          $VERSION = "${{ github.ref_name || github.event.inputs.version }}"
-          $VERSION = $VERSION -replace '^v', ''
-
-          $buildDir = "build\windows\x64\runner\Release"
-
-          Write-Host "📂 Build contents:"
-          Get-ChildItem $buildDir
-
-          # Verificar que existe el exe
-          $exeFiles = Get-ChildItem "$buildDir\*.exe"
-          if ($exeFiles.Count -eq 0) {
-            Write-Host "❌ No .exe found in $buildDir"
-            exit 1
-          }
-
-          $exeName = $exeFiles[0].Name
-          Write-Host "✅ EXE encontrado: $exeName ($([math]::Round($exeFiles[0].Length / 1MB, 2)) MB)"
-
-          # Renombrar a GhostB.exe si tiene otro nombre
-          if ($exeName -ne "GhostB.exe") {
-            Rename-Item "$buildDir\$exeName" "GhostB.exe"
-          }
-
-          # Crear zip con todo el bundle (exe + dlls + data)
-          Compress-Archive -Path "$buildDir\*" -DestinationPath "GhostB-${VERSION}-windows.zip"
-          Write-Host "✅ ZIP creado: GhostB-${VERSION}-windows.zip"
-
-          # Copiar exe standalone para descarga directa
-          Copy-Item "$buildDir\GhostB.exe" -Destination "GhostB.exe"
-          $size = (Get-Item "GhostB.exe").Length / 1MB
-          Write-Host "✅ EXE standalone: GhostB.exe ($([math]::Round($size, 2)) MB)"
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
+          $VERSION = "${{ github.ref_name || github.event.inputs.version }}" -replace '^v', ''
+          $dir = "build\windows\x64\runner\Release"
+          Compress-Archive -Path "$dir\*" -DestinationPath "GhostB-${VERSION}-windows.zip"
+      - uses: actions/upload-artifact@v4
         with:
           name: windows-packages
-          path: |
-            *.zip
-            GhostB.exe
+          path: "*.zip"
 
-  # ── Release ─────────────────────────────────────────────
   release:
     needs: [build-linux, build-macos, build-windows]
     runs-on: ubuntu-latest
     if: startsWith(github.ref, 'refs/tags/')
     steps:
       - uses: actions/checkout@v4
-
-      - name: Download all artifacts
-        uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v4
         with:
           path: artifacts
-
-      - name: List artifacts
-        run: find artifacts -type f | sort
-
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -273,42 +125,18 @@ EOF
           body: |
             ## 👻 GhostB ${{ github.ref_name }}
 
-            **Eliminador universal de aplicaciones** — Busca, elimina y limpia apps por completo.
+            | Plataforma | Archivo |
+            |---|---|
+            | 🐧 Linux | `ghostb_*_amd64.deb` |
+            | 🍎 macOS | `GhostB-*.dmg` |
+            | 🪟 Windows | `GhostB-*-windows.zip` |
 
-            ### 📦 Descargas
-
-            | Plataforma | Archivo | Descripción |
-            |---|---|---|
-            | 🐧 Linux | `ghostb_*_amd64.deb` | Paquete Debian/Ubuntu |
-            | 🍎 macOS | `GhostB-*.dmg` | Imagen de disco nativa |
-            | 🪟 Windows | `GhostB-*-windows.zip` | App completa (exe + dlls) |
-            | 🪟 Windows | `GhostB.exe` | Ejecutable (necesita dlls del zip) |
-
-            ### 🚀 Instalación
-
-            **Linux:**
-            ```bash
-            sudo dpkg -i ghostb_*_amd64.deb
-            ```
-
-            **macOS:**
-            Abrir el `.dmg` y arrastrar GhostB a Aplicaciones.
-
-            **Windows:**
-            Extraer el `.zip` y ejecutar `GhostB.exe`.
-
-            ### ✨ Características
-            - 🔍 Búsqueda instantánea de apps
-            - 🗑️ Eliminación total (paquete + cachés + configs + residuales)
-            - 🔒 Protección de apps contra eliminación accidental
-            - ⚡ Ultra rápido — búsqueda lazy, paginación
-            - 🌙 Dark mode
-            - 🐧🍎🪟 Linux + macOS + Windows
-            - Soporta: APT, Snap, Flatpak, Winget, Chocolatey, Scoop, Homebrew, MacPorts
+            **Linux:** `sudo dpkg -i ghostb_*.deb`
+            **macOS:** Abrir .dmg y arrastrar a Aplicaciones
+            **Windows:** Extraer .zip y ejecutar ghostb.exe
           files: |
             artifacts/**/*.deb
             artifacts/**/*.dmg
             artifacts/**/*.zip
-            artifacts/**/*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
