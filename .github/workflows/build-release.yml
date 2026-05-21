@@ -24,7 +24,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.27.4'
           channel: 'stable'
           cache: true
 
@@ -105,7 +105,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.27.4'
           channel: 'stable'
           cache: true
 
@@ -162,7 +162,7 @@ jobs:
           name: macos-packages
           path: "*.dmg"
 
-  # ── Windows: .exe ───────────────────────────────────────
+  # ── Windows: .exe nativo ─────────────────────────────────
   build-windows:
     runs-on: windows-latest
     steps:
@@ -171,7 +171,7 @@ jobs:
       - name: Set up Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.0'
+          flutter-version: '3.27.4'
           channel: 'stable'
           cache: true
 
@@ -181,23 +181,42 @@ jobs:
       - name: Build Windows
         run: flutter build windows --release
 
-      - name: Package Windows
+      - name: Package Windows exe
         shell: pwsh
         run: |
           $VERSION = "${{ github.ref_name || github.event.inputs.version }}"
           $VERSION = $VERSION -replace '^v', ''
 
-          # Copiar icono
-          Copy-Item "assets/images/ghostb.png" -Destination "build/windows/x64/runner/Release/ghostb.png"
+          $buildDir = "build\windows\x64\runner\Release"
 
-          # Comprimir como zip
-          Compress-Archive -Path "build/windows/x64/runner/Release/*" -DestinationPath "GhostB-${VERSION}-windows.zip"
+          # Renombrar ejecutable
+          if (Test-Path "$buildDir\ghostb.exe") {
+            # Ya tiene el nombre correcto
+          } elseif (Test-Path "$buildDir\flutter_application_1.exe") {
+            Rename-Item "$buildDir\flutter_application_1.exe" "GhostB.exe"
+          }
+
+          # Crear carpeta de distribución
+          New-Item -ItemType Directory -Force -Path "dist"
+          Copy-Item "$buildDir\*" -Destination "dist\" -Recurse
+
+          # Comprimir todo (exe + dlls + data)
+          Compress-Archive -Path "dist\*" -DestinationPath "GhostB-${VERSION}-windows.zip"
+
+          # También copiar el exe solo para descarga directa
+          $exePath = Get-ChildItem "dist\*.exe" | Select-Object -First 1
+          if ($exePath) {
+            Copy-Item $exePath.FullName -Destination "GhostB.exe"
+            Write-Host "✅ EXE: $($exePath.Name) ($([math]::Round($exePath.Length / 1MB, 2)) MB)"
+          }
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: windows-packages
-          path: "*.zip"
+          path: |
+            *.zip
+            GhostB.exe
 
   # ── Release ─────────────────────────────────────────────
   release:
@@ -252,5 +271,6 @@ jobs:
             artifacts/**/*.deb
             artifacts/**/*.dmg
             artifacts/**/*.zip
+            artifacts/**/*.exe
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
