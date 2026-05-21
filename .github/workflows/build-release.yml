@@ -42,7 +42,9 @@ jobs:
           mkdir -p deb/DEBIAN deb/opt/ghostb deb/usr/local/bin deb/usr/share/applications deb/usr/share/icons/hicolor/256x256/apps
           cp -r "$BUNDLE/"* deb/opt/ghostb/
           cp assets/images/ghostb.png deb/usr/share/icons/hicolor/256x256/apps/ghostb.png
-          printf '#!/bin/bash\ncd /opt/ghostb\nexec ./ghostb "$@"\n' > deb/usr/local/bin/ghostb
+          # El ejecutable puede llamarse ghostb o flutter_application_1
+          EXEC_NAME=$(find deb/opt/ghostb -maxdepth 1 -type f -executable | head -1 | xargs basename)
+          printf '#!/bin/bash\ncd /opt/ghostb\nexec ./%s "$@"\n' "$EXEC_NAME" > deb/usr/local/bin/ghostb
           chmod +x deb/usr/local/bin/ghostb
           printf '[Desktop Entry]\nName=GhostB\nComment=Eliminador universal de apps\nExec=/usr/local/bin/ghostb\nIcon=ghostb\nTerminal=false\nType=Application\nCategories=Utility;System;\n' > deb/usr/share/applications/ghostb.desktop
           printf "Package: ghostb\nVersion: ${VERSION}\nArchitecture: amd64\nMaintainer: eleodevv\nDescription: GhostB - Universal Smart App Remover\nDepends: libgtk-3-0\n" > deb/DEBIAN/control
