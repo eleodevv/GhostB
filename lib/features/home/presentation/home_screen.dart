@@ -268,7 +268,7 @@ class _SearchOnly extends ConsumerWidget {
     return results.when(
       data: (apps) => apps.isEmpty ? _Empty(isDark: isDark) : _Grid(apps: apps, isDark: isDark),
       loading: () => const Center(child: _Loader()),
-      error: (_, _) => _Empty(isDark: isDark),
+      error: (e, s) => _Empty(isDark: isDark),
     );
   }
 }
@@ -287,7 +287,7 @@ class _AllAppsView extends ConsumerWidget {
       return results.when(
         data: (apps) => apps.isEmpty ? _Empty(isDark: isDark) : _Grid(apps: apps, isDark: isDark),
         loading: () => const Center(child: _Loader()),
-        error: (_, _) => _Empty(isDark: isDark),
+        error: (e, s) => _Empty(isDark: isDark),
       );
     }
 
@@ -296,7 +296,7 @@ class _AllAppsView extends ConsumerWidget {
     return data.when(
       data: (apps) => apps.isEmpty ? _Welcome(isDark: isDark) : _Grid(apps: apps, isDark: isDark),
       loading: () => const Center(child: _Loader()),
-      error: (_, _) => _Empty(isDark: isDark),
+      error: (e, s) => _Empty(isDark: isDark),
     );
   }
 }
@@ -320,7 +320,7 @@ class _HeavyView extends ConsumerWidget {
             : _Grid(apps: filtered, isDark: isDark);
       },
       loading: () => const Center(child: _Loader()),
-      error: (_, _) => _Empty(isDark: isDark),
+      error: (e, s) => _Empty(isDark: isDark),
     );
   }
 }
@@ -345,7 +345,7 @@ class _ProtectedList extends ConsumerWidget {
         return list.isEmpty ? _Empty(isDark: isDark) : _Grid(apps: list, isDark: isDark);
       },
       loading: () => const Center(child: _Loader()),
-      error: (_, _) => _Empty(isDark: isDark),
+      error: (e, s) => _Empty(isDark: isDark),
     );
   }
 }
@@ -649,7 +649,7 @@ class _IconState extends State<_Icon> {
           borderRadius: BorderRadius.circular(widget.size * 0.2),
           child: Image.file(f, width: widget.size, height: widget.size,
               fit: BoxFit.cover, cacheWidth: (widget.size * 2).toInt(),
-              errorBuilder: (_, _, _) => _fb()),
+              errorBuilder: (ctx, err, st) => _fb()),
         );
       }
     }
