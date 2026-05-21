@@ -28,12 +28,16 @@ jobs:
           channel: 'stable'
           cache: true
 
+      - name: Disable Flutter analytics
+        continue-on-error: true
+        run: flutter config --no-analytics
+
       - name: Install Linux dependencies
         run: |
           sudo apt-get update
           sudo apt-get install -y clang cmake ninja-build pkg-config libgtk-3-dev liblzma-dev libstdc++-12-dev dpkg-dev
 
-      - name: Get Flutter dependencies
+      - name: Get dependencies
         run: flutter pub get
 
       - name: Build Linux
@@ -44,19 +48,25 @@ jobs:
           VERSION="${{ github.ref_name || github.event.inputs.version }}"
           VERSION="${VERSION#v}"
 
+          BUNDLE_DIR="build/linux/x64/release/bundle"
+
+          echo "📂 Bundle contents:"
+          ls -lah "$BUNDLE_DIR/"
+
+          # Estructura .deb
           mkdir -p deb/DEBIAN
           mkdir -p deb/opt/ghostb
           mkdir -p deb/usr/local/bin
           mkdir -p deb/usr/share/applications
           mkdir -p deb/usr/share/icons/hicolor/256x256/apps
 
-          # Copiar bundle
-          cp -r build/linux/x64/release/bundle/* deb/opt/ghostb/
+          # Copiar bundle completo
+          cp -r "$BUNDLE_DIR/"* deb/opt/ghostb/
 
           # Icono
           cp assets/images/ghostb.png deb/usr/share/icons/hicolor/256x256/apps/ghostb.png
 
-          # Ejecutable wrapper
+          # Wrapper ejecutable
           cat > deb/usr/local/bin/ghostb << 'EOF'
           #!/bin/bash
           cd /opt/ghostb
@@ -83,12 +93,13 @@ jobs:
           Architecture: amd64
           Maintainer: eleodevv <contact@ghostb.dev>
           Description: GhostB - Universal Smart App Remover
-           Elimina aplicaciones por completo incluyendo cachés,
+           Elimina aplicaciones por completo incluyendo caches,
            configuraciones y archivos residuales.
           Depends: libgtk-3-0
           EOF
 
           dpkg-deb --build deb "ghostb_${VERSION}_amd64.deb"
+          echo "✅ .deb creado: ghostb_${VERSION}_amd64.deb"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -109,46 +120,55 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Get Flutter dependencies
+      - name: Disable Flutter analytics
+        continue-on-error: true
+        run: flutter config --no-analytics
+
+      - name: Get dependencies
         run: flutter pub get
 
       - name: Build macOS
         run: flutter build macos --release
 
-      - name: Set app icon
+      - name: Find app and set icon
         run: |
-          # Convertir PNG a icns para macOS
-          APP_PATH="build/macos/Build/Products/Release/ghostb.app"
-          if [ -d "$APP_PATH" ]; then
-            mkdir -p icon.iconset
-            sips -z 16 16 assets/images/ghostb.png --out icon.iconset/icon_16x16.png
-            sips -z 32 32 assets/images/ghostb.png --out icon.iconset/icon_16x16@2x.png
-            sips -z 32 32 assets/images/ghostb.png --out icon.iconset/icon_32x32.png
-            sips -z 64 64 assets/images/ghostb.png --out icon.iconset/icon_32x32@2x.png
-            sips -z 128 128 assets/images/ghostb.png --out icon.iconset/icon_128x128.png
-            sips -z 256 256 assets/images/ghostb.png --out icon.iconset/icon_128x128@2x.png
-            sips -z 256 256 assets/images/ghostb.png --out icon.iconset/icon_256x256.png
-            sips -z 512 512 assets/images/ghostb.png --out icon.iconset/icon_256x256@2x.png
-            sips -z 512 512 assets/images/ghostb.png --out icon.iconset/icon_512x512.png
-            sips -z 1024 1024 assets/images/ghostb.png --out icon.iconset/icon_512x512@2x.png
-            iconutil -c icns icon.iconset -o AppIcon.icns
-            cp AppIcon.icns "$APP_PATH/Contents/Resources/AppIcon.icns"
+          APP_PATH=$(find build/macos/Build/Products/Release -name "*.app" -type d | head -1)
+          if [ -z "$APP_PATH" ]; then
+            echo "❌ App not found"
+            exit 1
           fi
+          echo "✅ App found: $APP_PATH"
+          echo "APP_PATH=$APP_PATH" >> $GITHUB_ENV
 
-      - name: Sign and create .dmg
-        run: |
-          VERSION="${{ github.ref_name || github.event.inputs.version }}"
-          VERSION="${VERSION#v}"
-          APP_PATH="build/macos/Build/Products/Release/ghostb.app"
+          # Generar icns desde ghostb.png
+          mkdir -p icon.iconset
+          sips -z 16 16 assets/images/ghostb.png --out icon.iconset/icon_16x16.png
+          sips -z 32 32 assets/images/ghostb.png --out icon.iconset/icon_16x16@2x.png
+          sips -z 32 32 assets/images/ghostb.png --out icon.iconset/icon_32x32.png
+          sips -z 64 64 assets/images/ghostb.png --out icon.iconset/icon_32x32@2x.png
+          sips -z 128 128 assets/images/ghostb.png --out icon.iconset/icon_128x128.png
+          sips -z 256 256 assets/images/ghostb.png --out icon.iconset/icon_128x128@2x.png
+          sips -z 256 256 assets/images/ghostb.png --out icon.iconset/icon_256x256.png
+          sips -z 512 512 assets/images/ghostb.png --out icon.iconset/icon_256x256@2x.png
+          sips -z 512 512 assets/images/ghostb.png --out icon.iconset/icon_512x512.png
+          sips -z 1024 1024 assets/images/ghostb.png --out icon.iconset/icon_512x512@2x.png
+          iconutil -c icns icon.iconset -o AppIcon.icns
+          cp AppIcon.icns "$APP_PATH/Contents/Resources/AppIcon.icns"
+          echo "✅ Icono aplicado"
 
           # Ad-hoc sign
           codesign --force --deep --sign - "$APP_PATH"
 
-          # Create DMG
+      - name: Create .dmg
+        run: |
+          VERSION="${{ github.ref_name || github.event.inputs.version }}"
+          VERSION="${VERSION#v}"
+
           DMG_DIR="dmg_staging"
           mkdir -p "$DMG_DIR"
           cp -R "$APP_PATH" "$DMG_DIR/"
           ln -s /Applications "$DMG_DIR/Applications"
+
           hdiutil create \
             -volname "GhostB" \
             -srcfolder "$DMG_DIR" \
@@ -156,13 +176,15 @@ jobs:
             -imagekey zlib-level=9 \
             "GhostB-${VERSION}.dmg"
 
+          echo "✅ DMG creado: GhostB-${VERSION}.dmg"
+
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
           name: macos-packages
           path: "*.dmg"
 
-  # ── Windows: .exe nativo ─────────────────────────────────
+  # ── Windows: .exe completo ──────────────────────────────
   build-windows:
     runs-on: windows-latest
     steps:
@@ -175,13 +197,17 @@ jobs:
           channel: 'stable'
           cache: true
 
-      - name: Get Flutter dependencies
+      - name: Disable Flutter analytics
+        continue-on-error: true
+        run: flutter config --no-analytics
+
+      - name: Get dependencies
         run: flutter pub get
 
       - name: Build Windows
         run: flutter build windows --release
 
-      - name: Package Windows exe
+      - name: Package Windows
         shell: pwsh
         run: |
           $VERSION = "${{ github.ref_name || github.event.inputs.version }}"
@@ -189,26 +215,32 @@ jobs:
 
           $buildDir = "build\windows\x64\runner\Release"
 
-          # Renombrar ejecutable
-          if (Test-Path "$buildDir\ghostb.exe") {
-            # Ya tiene el nombre correcto
-          } elseif (Test-Path "$buildDir\flutter_application_1.exe") {
-            Rename-Item "$buildDir\flutter_application_1.exe" "GhostB.exe"
+          Write-Host "📂 Build contents:"
+          Get-ChildItem $buildDir
+
+          # Verificar que existe el exe
+          $exeFiles = Get-ChildItem "$buildDir\*.exe"
+          if ($exeFiles.Count -eq 0) {
+            Write-Host "❌ No .exe found in $buildDir"
+            exit 1
           }
 
-          # Crear carpeta de distribución
-          New-Item -ItemType Directory -Force -Path "dist"
-          Copy-Item "$buildDir\*" -Destination "dist\" -Recurse
+          $exeName = $exeFiles[0].Name
+          Write-Host "✅ EXE encontrado: $exeName ($([math]::Round($exeFiles[0].Length / 1MB, 2)) MB)"
 
-          # Comprimir todo (exe + dlls + data)
-          Compress-Archive -Path "dist\*" -DestinationPath "GhostB-${VERSION}-windows.zip"
-
-          # También copiar el exe solo para descarga directa
-          $exePath = Get-ChildItem "dist\*.exe" | Select-Object -First 1
-          if ($exePath) {
-            Copy-Item $exePath.FullName -Destination "GhostB.exe"
-            Write-Host "✅ EXE: $($exePath.Name) ($([math]::Round($exePath.Length / 1MB, 2)) MB)"
+          # Renombrar a GhostB.exe si tiene otro nombre
+          if ($exeName -ne "GhostB.exe") {
+            Rename-Item "$buildDir\$exeName" "GhostB.exe"
           }
+
+          # Crear zip con todo el bundle (exe + dlls + data)
+          Compress-Archive -Path "$buildDir\*" -DestinationPath "GhostB-${VERSION}-windows.zip"
+          Write-Host "✅ ZIP creado: GhostB-${VERSION}-windows.zip"
+
+          # Copiar exe standalone para descarga directa
+          Copy-Item "$buildDir\GhostB.exe" -Destination "GhostB.exe"
+          $size = (Get-Item "GhostB.exe").Length / 1MB
+          Write-Host "✅ EXE standalone: GhostB.exe ($([math]::Round($size, 2)) MB)"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
@@ -231,6 +263,9 @@ jobs:
         with:
           path: artifacts
 
+      - name: List artifacts
+        run: find artifacts -type f | sort
+
       - name: Create Release
         uses: softprops/action-gh-release@v2
         with:
@@ -246,7 +281,8 @@ jobs:
             |---|---|---|
             | 🐧 Linux | `ghostb_*_amd64.deb` | Paquete Debian/Ubuntu |
             | 🍎 macOS | `GhostB-*.dmg` | Imagen de disco nativa |
-            | 🪟 Windows | `GhostB-*-windows.zip` | Ejecutable portable |
+            | 🪟 Windows | `GhostB-*-windows.zip` | App completa (exe + dlls) |
+            | 🪟 Windows | `GhostB.exe` | Ejecutable (necesita dlls del zip) |
 
             ### 🚀 Instalación
 
@@ -259,14 +295,16 @@ jobs:
             Abrir el `.dmg` y arrastrar GhostB a Aplicaciones.
 
             **Windows:**
-            Extraer el `.zip` y ejecutar `ghostb.exe`.
+            Extraer el `.zip` y ejecutar `GhostB.exe`.
 
             ### ✨ Características
-            - Busca apps instaladas al instante
-            - Elimina paquetes + cachés + configs + residuales
-            - Protege apps contra eliminación accidental
-            - Soporta APT, Snap, Flatpak, Winget, Chocolatey, Scoop, Homebrew, MacPorts
-            - UI pixel-ghost minimalista con dark mode
+            - 🔍 Búsqueda instantánea de apps
+            - 🗑️ Eliminación total (paquete + cachés + configs + residuales)
+            - 🔒 Protección de apps contra eliminación accidental
+            - ⚡ Ultra rápido — búsqueda lazy, paginación
+            - 🌙 Dark mode
+            - 🐧🍎🪟 Linux + macOS + Windows
+            - Soporta: APT, Snap, Flatpak, Winget, Chocolatey, Scoop, Homebrew, MacPorts
           files: |
             artifacts/**/*.deb
             artifacts/**/*.dmg
